@@ -1,7 +1,7 @@
 module
 
 public import LDPC.PaperLemmas.Expansion
-public import ArkLib.Data.Probability.Instances
+public import LDPC.Probability.Instances
 public import LDPC.PaperLemmas.Folding
 
 /-!
@@ -31,7 +31,7 @@ theorem theorem_8 (H : G.WeightedSystem F) {α d : ℚ}
     Pr_{let r ← $ᵖ F}[GoodFold H.code (d / 2) u v r] ≤
       (Fintype.card F : ENNReal)⁻¹ := by
   classical
-  exact Probability.prob_uniform_le_inv_of_card_le_one _
+  exact LegacyProbability.prob_uniform_le_inv_of_card_le_one _
     (theorem_8_card H hsmooth u v hfar hbad)
 
 /-- The integer-cutoff expander variant of the few-check lemma. Smoothness is
@@ -48,7 +48,7 @@ theorem expander_theorem_8 [Nonempty L] [Nonempty R]
     (hbad : ((H.badChecks u v).card : ℚ) ≤ α * Fintype.card R) :
     Pr_{let r ← $ᵖ F}[GoodFold H.code ((1 - γ) * K) u v r] ≤
       (Fintype.card F : ENNReal)⁻¹ := by
-  apply Probability.prob_uniform_le_inv_of_card_le_one
+  apply LegacyProbability.prob_uniform_le_inv_of_card_le_one
   exact theorem_8_card H (proposition_7 hG hc hγ0 hτlo hτhi hK hα H) u v hfar hbad
 
 end SmoothLDPC

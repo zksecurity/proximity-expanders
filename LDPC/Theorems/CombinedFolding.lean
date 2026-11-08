@@ -26,7 +26,7 @@ theorem fold_only_response_probability_le (H : G.WeightedSystem F) {θ : ℚ}
   classical
   by_cases hg : GoodFold H.code θ u v r
   · simp only [hg, if_true]
-    exact (Probability.prob_le_one _ _).trans le_self_add
+    exact (LegacyProbability.prob_le_one _ _).trans le_self_add
   · simp only [hg, if_false, zero_add]
     by_cases hc : response r ∈ H.code
     · have hfar : θ ≤ (distance (u + r • v) (response r) : ℚ) := by
@@ -44,9 +44,9 @@ theorem fold_only_response_probability_le (H : G.WeightedSystem F) {θ : ℚ}
       have hmiss := miss_checks_le B (θ / Fintype.card L)
         ((div_le_one (by positivity)).mpr hθn)
         (by rwa [div_mul_cancel₀ _ (by positivity)]) Q
-      have hbound := (Probability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → L)) _ _ himp).trans hmiss
+      have hbound := (LegacyProbability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → L)) _ _ himp).trans hmiss
       simpa only [Rat.cast_div, Rat.cast_natCast] using hbound
-    · rw [Probability.prob_eq_zero_of_forall_not ($ᵖ (Fin Q → L))
+    · rw [LegacyProbability.prob_eq_zero_of_forall_not ($ᵖ (Fin Q → L))
         (fun sample => FoldOnlyAccept H u v response r sample) (fun _ h => hc h.1)]
       positivity
 
@@ -67,9 +67,9 @@ theorem fold_only_soundness_of_smooth (H : G.WeightedSystem F)
     Pr_{let sample ← $ᵖ (Fin Q → L)}[FoldOnlyAccept H u v response r sample]
   have hsplit : Pr_{let r ← $ᵖ F; let sample ← $ᵖ (Fin Q → L)}[
       FoldOnlyAccept H u v response r sample] = ∑' r, ($ᵖ F) r * g r :=
-    Probability.prob_tsum_form_split_first _ _
+    LegacyProbability.prob_tsum_form_split_first _ _
   rw [hsplit]
-  apply (Probability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code θ u v) _
+  apply (LegacyProbability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code θ u v) _
     (fun r => fold_only_response_probability_le H hθn u v response r Q)).trans
   exact add_le_add (combined_folding_of_smooth H hreg hc hs hθ hthreshold u v hfar) le_rfl
 

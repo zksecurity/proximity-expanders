@@ -2,7 +2,7 @@ module
 
 public import LDPC.Statements.Protocol
 public import LDPC.Helpers.Algebra
-public import ArkLib.Data.Probability.Instances
+public import LDPC.Probability.Instances
 
 /-! Exact coordinate-query error for a response fixed before sampling. -/
 @[expose] public section
@@ -23,7 +23,7 @@ theorem spotAccept_probability (u v : L → F) (r : F) (claimed : L → F) (Q : 
       spotAccept u v r claimed coords ↔ ∀ i, coords i ∈ I := by
     intro coords
     simp [spotAccept, I, mem_support, sub_eq_zero, smul_eq_mul]
-  rw [Probability.Pr_congr heq, Probability.prob_uniform_pi_mem_finset_eq]
+  rw [LegacyProbability.Pr_congr heq, LegacyProbability.prob_uniform_pi_mem_finset_eq]
   simp only [I, Finset.card_sdiff_of_subset (Finset.subset_univ _), Finset.card_univ,
     distance]
 

@@ -3,6 +3,7 @@ module
 public import LDPC.Statements.Core
 public import ArkLib.Data.CodingTheory.ProximityGenerator.Basic
 public import Mathlib.Tactic.FinCases
+public import LDPC.Probability.Instances
 
 /-! Public definitions and review interfaces: Statements.MCA. -/
 

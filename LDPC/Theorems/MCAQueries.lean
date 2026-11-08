@@ -32,12 +32,12 @@ theorem queried_soundness [Nonempty L] (H : G.WeightedSystem F)
       exact_mod_cast hb
     calc
       _ ≤ Pr_{let z ← $ᵖ F}[Bad H.code ρ u v z] :=
-        mul_le_of_le_one_right' (Probability.prob_le_one _ _)
+        mul_le_of_le_one_right' (LegacyProbability.prob_le_one _ _)
       _ ≤ (max 1 p:ℕ)/(Fintype.card F:ENNReal) := probability_le_of_smooth H hs hd hp hρ u v hbad
       _ ≤ _ := le_max_left _ _
   · calc
       _ ≤ Pr_{let sample ← $ᵖ (Fin Q → R)}[parityAccept H u v sample] :=
-        mul_le_of_le_one_left' (Probability.prob_le_one _ _)
+        mul_le_of_le_one_left' (LegacyProbability.prob_le_one _ _)
       _ ≤ (((Fintype.card R-t:ℕ):ENNReal)/Fintype.card R)^Q :=
         parityAccept_probability_le H u v Q t (by omega)
       _ ≤ _ := le_max_right _ _

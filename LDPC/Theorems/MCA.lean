@@ -42,7 +42,7 @@ theorem probability_le_of_smooth [Nonempty L] (H : G.WeightedSystem F)
     (u v : L → F) (hbad : ((H.badChecks u v).card:ℚ)≤α*Fintype.card R) :
     Pr_{let z ← $ᵖ F}[Bad H.code ρ u v z]≤(max 1 p:ℕ)/ (Fintype.card F:ENNReal) := by
   classical
-  rw [Probability.prob_uniform_eq_card_filter_div_card]
+  rw [LegacyProbability.prob_uniform_eq_card_filter_div_card]
   apply ENNReal.div_le_div_right
   exact_mod_cast card_bad_le_of_smooth H hs hd hp hρ u v hbad
 

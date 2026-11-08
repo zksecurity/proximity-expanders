@@ -40,14 +40,14 @@ theorem shared_response_probability_le (H : G.WeightedSystem F) {ρ α : ℚ}
   classical
   by_cases hg : GoodFold H.code ρ u v r
   · simp only [hg, if_true]
-    exact (Probability.prob_le_one _ _).trans le_self_add
+    exact (LegacyProbability.prob_le_one _ _).trans le_self_add
   · simp only [hg, if_false, zero_add]
     by_cases hc : response r ∈ H.code
     · have hfar : ρ ≤ (distance (u + r • v) (response r) : ℚ) := by
         by_contra hn
         exact hg ⟨response r, hc, lt_of_not_ge hn⟩
       let S := support (u + r • v - response r)
-      refine (Probability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → R))
+      refine (LegacyProbability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → R))
         (fun sample => SharedAccept H u v response r sample)
         (fun sample => ∀ q, sample q ∈ Finset.univ \ G.neighborhood S) ?_).trans
         (miss_checks_le _ α hα (hdetect S hfar) Q)
@@ -59,7 +59,7 @@ theorem shared_response_probability_le (H : G.WeightedSystem F) {ρ α : ℚ}
       have hne : u i + r * v i ≠ response r i := by
         simpa [S, mem_support, sub_eq_zero, smul_eq_mul] using hi
       exact hne (h.2.2 q i hij)
-    · rw [Probability.prob_eq_zero_of_forall_not ($ᵖ (Fin Q → R))
+    · rw [LegacyProbability.prob_eq_zero_of_forall_not ($ᵖ (Fin Q → R))
         (fun sample => SharedAccept H u v response r sample) (fun _ h => hc h.2.1)]
       positivity
 
@@ -71,7 +71,7 @@ theorem shared_acceptance_le_of_many (H : G.WeightedSystem F) {α : ℚ}
     (response : F → L → F) (r : F) (Q : ℕ) :
     Pr_{let sample ← $ᵖ (Fin Q → R)}[SharedAccept H u v response r sample] ≤
       ENNReal.ofReal (1 - (α : ℝ))^Q := by
-  exact (Probability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → R))
+  exact (LegacyProbability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → R))
     (fun sample => SharedAccept H u v response r sample)
     (fun sample => ∀ q, sample q ∈ Finset.univ \ H.badChecks u v)
     (fun _ h => h.1)).trans (miss_checks_le _ α hα hb Q)

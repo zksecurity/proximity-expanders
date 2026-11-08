@@ -19,9 +19,9 @@ theorem queried_probability_eq_mul (H : G.WeightedSystem F) (ρ : ℚ) (u v : L 
     Pr_{let z ← $ᵖ F}[Bad H.code ρ u v z]*
       Pr_{let sample ← $ᵖ (Fin Q → R)}[parityAccept H u v sample] := by
   classical
-  rw [← Probability.prob_split_uniform_sampling_of_prod
+  rw [← LegacyProbability.prob_split_uniform_sampling_of_prod
     (P := fun t : F × (Fin Q → R) => parityAccept H u v t.2 ∧ Bad H.code ρ u v t.1)]
-  simp only [Probability.prob_uniform_eq_card_filter_div_card]
+  simp only [LegacyProbability.prob_uniform_eq_card_filter_div_card]
   have hf : (Finset.univ.filter fun t : F × (Fin Q → R) =>
       parityAccept H u v t.2 ∧ Bad H.code ρ u v t.1) =
       (Finset.univ.filter (Bad H.code ρ u v)) ×ˢ
@@ -40,7 +40,7 @@ theorem parityAccept_probability_eq (H : G.WeightedSystem F) (u v : L → F) (Q 
     Pr_{let sample ← $ᵖ (Fin Q → R)}[parityAccept H u v sample] =
       (((Fintype.card R-(H.badChecks u v).card:ℕ):ENNReal)/Fintype.card R)^Q := by
   change Pr_{let sample ← $ᵖ (Fin Q → R)}[∀ i,sample i∈Finset.univ \ H.badChecks u v] = _
-  rw [Probability.prob_uniform_pi_mem_finset_eq,Finset.card_sdiff_of_subset (Finset.subset_univ _),Finset.card_univ]
+  rw [LegacyProbability.prob_uniform_pi_mem_finset_eq,Finset.card_sdiff_of_subset (Finset.subset_univ _),Finset.card_univ]
 
 omit [Fintype F] [DecidableEq F] in
 theorem parityAccept_probability_le (H : G.WeightedSystem F) (u v : L → F) (Q t : ℕ)

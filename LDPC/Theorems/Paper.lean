@@ -43,7 +43,7 @@ theorem main_technical_lemma (H : G.WeightedSystem F)
       (1 - 3 * γ - ε) * k * ((1 - γ) * δ * Fintype.card L) /
         Fintype.card L := by ring
   rw [hα] at hs
-  exact Probability.prob_uniform_le_inv_of_card_le_one _
+  exact LegacyProbability.prob_uniform_le_inv_of_card_le_one _
     (theorem_8_card H hs u v hfar hbad)
 
 /-- The main folding theorem combines the few-check lemma with a union bound
@@ -103,8 +103,8 @@ theorem ligero (H : G.WeightedSystem F)
     (mul_le_of_le_one_left hP (by linarith)).trans hfar.radius_lt_card.le
   let g : F → ENNReal := fun r =>
     Pr_{let sample ← $ᵖ (Fin Q → L)}[Protocol.FoldOnlyAccept H u v response r sample]
-  rw [Probability.prob_tsum_form_split_first _ _]
-  apply (Probability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code t u v) _
+  rw [LegacyProbability.prob_tsum_form_split_first _ _]
+  apply (LegacyProbability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code t u v) _
     (fun r => Protocol.fold_only_response_probability_le H ht u v response r Q)).trans
   exact add_le_add (folding H hG hc hγ0 hε0 hε hmargin u v hfar) le_rfl
 
@@ -192,31 +192,31 @@ theorem hybrid_sampling (H : G.WeightedSystem F)
   · let g : F → ENNReal := fun r =>
       Pr_{let samples ← $ᵖ ((Fin Qp → R) × (Fin Qs → L))}[
         Protocol.Accept H u v response r samples.1 samples.2]
-    rw [Probability.prob_tsum_form_split_first _ _]
+    rw [LegacyProbability.prob_tsum_form_split_first _ _]
     apply le_trans _ (le_max_left _ _)
-    apply (Probability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code P u v) _ ?_).trans
+    apply (LegacyProbability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code P u v) _ ?_).trans
     · exact add_le_add
         (main_technical_lemma H hG hc hγ0 hε0 hε hmargin u v hfar hb) le_rfl
     · intro r
-      have hle := Probability.Pr_le_Pr_of_implies
+      have hle := LegacyProbability.Pr_le_Pr_of_implies
         ($ᵖ ((Fin Qp → R) × (Fin Qs → L)))
         (fun samples => Protocol.Accept H u v response r samples.1 samples.2)
         (fun samples => Protocol.FoldOnlyAccept H u v response r samples.2)
         (fun _ h => h.2)
       apply hle.trans
-      rw [Probability.prob_split_uniform_sampling_of_prod]
-      apply Probability.Pr_seq_le_of_forall_le
+      rw [LegacyProbability.prob_split_uniform_sampling_of_prod]
+      apply LegacyProbability.Pr_seq_le_of_forall_le
       intro checks
       exact Protocol.fold_only_response_probability_le H
         hfar.radius_lt_card.le u v response r Qs
   · apply le_trans _ (le_max_right _ _)
-    apply Probability.Pr_seq_le_of_forall_le
+    apply LegacyProbability.Pr_seq_le_of_forall_le
     intro r
-    have hle := Probability.Pr_le_Pr_of_implies
+    have hle := LegacyProbability.Pr_le_Pr_of_implies
       ($ᵖ ((Fin Qp → R) × (Fin Qs → L)))
       (fun samples => Protocol.Accept H u v response r samples.1 samples.2)
       (fun samples => MCA.parityAccept H u v samples.1) (fun _ h => h.1)
-    rw [Probability.prob_marginalization_first_of_prod] at hle
+    rw [LegacyProbability.prob_marginalization_first_of_prod] at hle
     have hcount := Finset.card_le_univ (H.badChecks u v)
     have hm : (0 : ℚ) < Fintype.card R := by exact_mod_cast Fintype.card_pos
     have hα : α ≤ 1 := by

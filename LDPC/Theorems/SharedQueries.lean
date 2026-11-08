@@ -27,13 +27,13 @@ theorem shared_soundness_of_smooth (H : G.WeightedSystem F) {P ρ α : ℚ}
       Pr_{let sample ← $ᵖ (Fin Q → R)}[SharedAccept H u v response r sample]
     have hsplit : Pr_{let r ← $ᵖ F; let sample ← $ᵖ (Fin Q → R)}[
         SharedAccept H u v response r sample] = ∑' r, ($ᵖ F) r * g r :=
-      Probability.prob_tsum_form_split_first _ _
+      LegacyProbability.prob_tsum_form_split_first _ _
     rw [hsplit]
-    apply (Probability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code ρ u v) _
+    apply (LegacyProbability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code ρ u v) _
       (fun r => shared_response_probability_le H hα hdetect u v response r Q)).trans
     exact add_le_add
-      (Probability.prob_uniform_le_inv_of_card_le_one _ (theorem_8_card H hs u v hfar hb)) le_rfl
-  · have hmany := Probability.Pr_seq_le_of_forall_le ($ᵖ (Fin Q → R)) ($ᵖ F)
+      (LegacyProbability.prob_uniform_le_inv_of_card_le_one _ (theorem_8_card H hs u v hfar hb)) le_rfl
+  · have hmany := LegacyProbability.Pr_seq_le_of_forall_le ($ᵖ (Fin Q → R)) ($ᵖ F)
       (fun sample r => SharedAccept H u v response r sample)
       (fun r => shared_acceptance_le_of_many H hα u v (le_of_not_ge hb) response r Q)
     exact hmany.trans le_add_self
