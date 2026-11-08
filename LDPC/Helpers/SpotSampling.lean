@@ -2,19 +2,19 @@ module
 
 public import LDPC.Statements.Protocol
 public import LDPC.Helpers.Algebra
-public import LDPC.Probability.Instances
+public import ArkLib.Data.Probability.Instances
 
 /-! Exact coordinate-query error for a response fixed before sampling. -/
 @[expose] public section
 open scoped ProbabilityTheory
 namespace SmoothLDPC.Protocol
 
-variable {L F : Type} [Fintype L] [DecidableEq L] [Nonempty L]
+variable {L F : Type} [Fintype L] [DecidableEq L] [Nonempty L] [SampleableType L]
     [Field F] [DecidableEq F]
 
 /-- All samples miss the disagreement set with its exact product probability. -/
 theorem spotAccept_probability (u v : L → F) (r : F) (claimed : L → F) (Q : ℕ) :
-    Pr_{let coords ← $ᵖ (Fin Q → L)}[spotAccept u v r claimed coords] =
+    Pr{let coords ← $ᵗ (Fin Q → L)}[spotAccept u v r claimed coords] =
       (((Fintype.card L - distance (u + r • v) claimed : ℕ) : ENNReal) /
         Fintype.card L)^Q := by
   classical
@@ -23,13 +23,13 @@ theorem spotAccept_probability (u v : L → F) (r : F) (claimed : L → F) (Q : 
       spotAccept u v r claimed coords ↔ ∀ i, coords i ∈ I := by
     intro coords
     simp [spotAccept, I, mem_support, sub_eq_zero, smul_eq_mul]
-  rw [LegacyProbability.Pr_congr heq, LegacyProbability.prob_uniform_pi_mem_finset_eq]
+  rw [prEvent_congr _ _ _ heq, Probability.prob_uniform_pi_mem_finset_eq]
   simp only [I, Finset.card_sdiff_of_subset (Finset.subset_univ _), Finset.card_univ,
     distance]
 
 theorem spotAccept_probability_le (u v : L → F) (r : F) (claimed : L → F)
     (Q s : ℕ) (hfar : s ≤ distance (u + r • v) claimed) :
-    Pr_{let coords ← $ᵖ (Fin Q → L)}[spotAccept u v r claimed coords] ≤
+    Pr{let coords ← $ᵗ (Fin Q → L)}[spotAccept u v r claimed coords] ≤
       (((Fintype.card L - s : ℕ) : ENNReal) / Fintype.card L)^Q := by
   rw [spotAccept_probability]
   apply pow_le_pow_left'

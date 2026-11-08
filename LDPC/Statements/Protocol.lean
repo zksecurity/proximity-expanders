@@ -31,9 +31,11 @@ def Accept (H : G.WeightedSystem F) (u v : L → F) (response : F → L → F)
 and both query budgets. The radius s is an absolute integer threshold. -/
 def Soundness [Fintype F] [Nonempty L] [Nonempty R]
     (H : G.WeightedSystem F) (P : ℚ) (s t : ℕ) : Prop :=
+  letI := SampleableType.ofFintype F; letI := SampleableType.ofFintype R
+  letI := SampleableType.ofFintype L
   ∀ (u v : L → F), PairFar H.code P u v →
     ∀ (response : F → L → F) (Qp Qs : ℕ),
-    Pr_{let r ← $ᵖ F; let samples ← $ᵖ ((Fin Qp → R) × (Fin Qs → L))}[
+    Pr{let r ← $ᵗ F; let samples ← $ᵗ ((Fin Qp → R) × (Fin Qs → L))}[
       Accept H u v response r samples.1 samples.2] ≤
       max ((Fintype.card F : ENNReal)⁻¹ +
         (((Fintype.card L - s : ℕ) : ENNReal) / Fintype.card L)^Qs)

@@ -3,7 +3,7 @@ module
 public import LDPC.Statements.Core
 public import ArkLib.Data.CodingTheory.ProximityGenerator.Basic
 public import Mathlib.Tactic.FinCases
-public import LDPC.Probability.Instances
+public import ArkLib.Data.Probability.Instances
 
 /-! Public definitions and review interfaces: Statements.MCA. -/
 
@@ -40,10 +40,11 @@ def parityAccept (H : G.WeightedSystem F) (u v : L → F) {Q : ℕ} (sample : Fi
 
 /-- The few-check guarantee and the query-augmented guarantee, uniformly over inputs. -/
 def Guarantees (H : G.WeightedSystem F) (ρ : ℚ) (p t : ℕ) : Prop :=
+  letI := SampleableType.ofFintype F; letI := SampleableType.ofFintype R
   (∀ u v : L → F,(H.badChecks u v).card≤t →
-    Pr_{let z ← $ᵖ F}[Bad H.code ρ u v z]≤(max 1 p:ℕ)/(Fintype.card F:ENNReal)) ∧
+    Pr{let z ← $ᵗ F}[Bad H.code ρ u v z]≤(max 1 p:ℕ)/(Fintype.card F:ENNReal)) ∧
   (∀ (u v : L → F) (Q : ℕ),
-    Pr_{let z ← $ᵖ F;let sample ← $ᵖ (Fin Q → R)}[
+    Pr{let z ← $ᵗ F;let sample ← $ᵗ (Fin Q → R)}[
       parityAccept H u v sample ∧ Bad H.code ρ u v z]≤
       max ((max 1 p:ℕ)/(Fintype.card F:ENNReal))
         ((((Fintype.card R-t:ℕ):ENNReal)/Fintype.card R)^Q))

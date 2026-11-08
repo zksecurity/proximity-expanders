@@ -54,7 +54,7 @@ its stronger radius d/2 and folding error 1/|F|. -/
 theorem smoothness_proximity_gap
     {L R F : Type} [Fintype L] [Fintype R] [Fintype F]
     [Nonempty L] [Nonempty R] [DecidableEq L] [DecidableEq R]
-    [Field F] [DecidableEq F] {G : TannerGraph L R}
+    [Field F] [DecidableEq F] [SampleableType F] {G : TannerGraph L R}
     {c k : ℕ} {γ δ ε : ℚ}
     (hG : G.IsExpander c k γ δ) (hc : 0 < c) (hγ0 : 0 ≤ γ)
     (hε0 : 0 < ε) (hε : ε < 1 - 3 * γ)
@@ -67,7 +67,7 @@ theorem smoothness_proximity_gap
       ((1 - 3 * γ - ε) * k * ((1 - γ) * δ * Fintype.card L) /
         Fintype.card L) * Fintype.card R) :
     -- Only the folding scalar is sampled; proximity is strict.
-    Pr_{let r ← $ᵖ F}[GoodFold H.code ((1 - γ) * δ * Fintype.card L) u v r] ≤
+    Pr{let r ← $ᵗ F}[GoodFold H.code ((1 - γ) * δ * Fintype.card L) u v r] ≤
       (Fintype.card F : ENNReal)⁻¹ :=
   Paper.main_technical_lemma H hG hc hγ0 hε0 hε hmargin u v hfar hbad
 
@@ -76,7 +76,7 @@ into the few-check and many-check cases. Their bounds are not added. -/
 theorem folding
     {L R F : Type} [Fintype L] [Fintype R] [Fintype F]
     [Nonempty L] [Nonempty R] [DecidableEq L] [DecidableEq R]
-    [Field F] [DecidableEq F] {G : TannerGraph L R}
+    [Field F] [DecidableEq F] [SampleableType F] {G : TannerGraph L R}
     {c k : ℕ} {γ δ ε : ℚ}
     (hG : G.IsExpander c k γ δ) (hc : 0 < c) (hγ0 : 0 ≤ γ)
     (hε0 : 0 < ε) (hε : ε < 1 - 3 * γ)
@@ -84,7 +84,7 @@ theorem folding
     (H : G.WeightedSystem F) (u v : L → F)
     (hfar : PairFar H.code ((1 - γ) * δ * Fintype.card L) u v) :
     -- The fold radius is t=(1−3γ−ε)d/2, with a check-count loss in the error.
-    Pr_{let r ← $ᵖ F}[
+    Pr{let r ← $ᵗ F}[
       GoodFold H.code ((1 - 3 * γ - ε) * ((1 - γ) * δ * Fintype.card L)) u v r] ≤
       (Fintype.card R : ENNReal) / Fintype.card F :=
   Paper.folding H hG hc hγ0 hε0 hε hmargin u v hfar

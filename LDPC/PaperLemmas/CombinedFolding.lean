@@ -2,6 +2,7 @@ module
 
 public import LDPC.PaperLemmas.SharedQueries
 public import LDPC.Helpers.SpotSampling
+public import LDPC.Helpers.Uniform
 
 /-! The main folding argument, including
 its explicit check-count loss. This is separate from the check-sampling test. -/
@@ -33,11 +34,11 @@ theorem failed_checks_le_distance {c k : ℕ} (hreg : G.IsRegular c k)
 
 omit [Nonempty L] [Nonempty R] in
 /-- A fixed violated input check can cancel at at most one folding challenge. -/
-theorem check_cancellation_probability (H : G.WeightedSystem F) (u v : L → F)
+theorem check_cancellation_probability [SampleableType F] (H : G.WeightedSystem F) (u v : L → F)
     (j : R) (hj : j ∈ H.badChecks u v) :
-    Pr_{let r ← $ᵖ F}[H.check (u + r • v) j = 0] ≤ (Fintype.card F : ENNReal)⁻¹ := by
+    Pr{let r ← $ᵗ F}[H.check (u + r • v) j = 0] ≤ (Fintype.card F : ENNReal)⁻¹ := by
   classical
-  apply LegacyProbability.prob_uniform_le_inv_of_card_le_one
+  apply prEvent_uniformSample_le_inv_of_card_le_one
   apply Finset.card_le_one.mpr
   intro r hr z hz
   have he (a : F) : H.check (u + a • v) j = H.check u j + a * H.check v j := by
@@ -55,18 +56,18 @@ theorem check_cancellation_probability (H : G.WeightedSystem F) (u v : L → F)
 
 omit [Nonempty L] in
 /-- Removing the few-violations premise by cancellation counting costs |R|/|F|. -/
-theorem combined_folding_of_smooth (H : G.WeightedSystem F) {c k : ℕ} {α P ρ θ : ℚ}
+theorem combined_folding_of_smooth [SampleableType F] (H : G.WeightedSystem F) {c k : ℕ} {α P ρ θ : ℚ}
     (hreg : G.IsRegular c k) (hc : 0 < c) (hs : IsSmooth H α P ρ)
     (hθ : θ ≤ ρ) (hthreshold : (c : ℚ) * θ ≤ α * Fintype.card R)
     (u v : L → F) (hfar : PairFar H.code P u v) :
-    Pr_{let r ← $ᵖ F}[GoodFold H.code θ u v r] ≤
+    Pr{let r ← $ᵗ F}[GoodFold H.code θ u v r] ≤
       (Fintype.card R : ENNReal) / Fintype.card F := by
   classical
   by_cases hb : ((H.badChecks u v).card : ℚ) ≤ α * Fintype.card R
-  · have hle := LegacyProbability.Pr_le_Pr_of_implies ($ᵖ F)
+  · have hle := prEvent_mono ($ᵗ F)
       (GoodFold H.code θ u v) (GoodFold H.code ρ u v)
       (fun _ h => by obtain ⟨cw, hcw, hd⟩ := h; exact ⟨cw, hcw, hd.trans_le hθ⟩)
-    apply (hle.trans (LegacyProbability.prob_uniform_le_inv_of_card_le_one _
+    apply (hle.trans (prEvent_uniformSample_le_inv_of_card_le_one _
       (theorem_8_card H hs u v hfar hb))).trans
     simpa only [div_eq_mul_inv, one_mul] using mul_le_mul_of_nonneg_right
       (show (1 : ENNReal) ≤ Fintype.card R by exact_mod_cast Fintype.card_pos)
@@ -86,8 +87,8 @@ theorem combined_folding_of_smooth (H : G.WeightedSystem F) {c k : ℕ} {α P ρ
       have hcount' : (W.card : ℚ) ≤ c * distance (u + r • v) cw := by exact_mod_cast hcount
       have hstrict := mul_lt_mul_of_pos_left hd (show (0 : ℚ) < c by exact_mod_cast hc)
       exact hb (hcount'.trans (hstrict.le.trans hthreshold))
-    have hle := LegacyProbability.Pr_le_Pr_of_implies ($ᵖ F) _ _ himp
-    have hu := LegacyProbability.Pr_exists_le ($ᵖ F) (fun (j : W) r => H.check (u + r • v) j = 0)
+    have hle := prEvent_mono ($ᵗ F) _ _ himp
+    have hu := prEvent_exists_le ($ᵗ F) (fun (j : W) r => H.check (u + r • v) j = 0)
     apply (hle.trans hu).trans
     calc
       _ ≤ ∑ _j : W, (Fintype.card F : ENNReal)⁻¹ :=

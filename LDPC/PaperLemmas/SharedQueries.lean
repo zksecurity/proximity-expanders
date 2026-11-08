@@ -1,6 +1,7 @@
 module
 
 public import LDPC.Helpers.CheckSampling
+public import LDPC.Helpers.Uniform
 public import LDPC.PaperLemmas.Folding
 public import LDPC.Helpers.ExpansionParameters
 public import Mathlib.Algebra.Order.Floor.Ring
@@ -13,9 +14,9 @@ attribute [local instance] Classical.propDecidable
 
 variable {L R F : Type} [Fintype L] [DecidableEq L] [Nonempty L]
     [Fintype R] [DecidableEq R] [Nonempty R]
-    [Field F] [DecidableEq F] [Fintype F] {G : TannerGraph L R}
+    [Field F] [DecidableEq F] [Fintype F] {G : TannerGraph L R} [SampleableType R]
 
-omit [Fintype F] [DecidableEq F] [Nonempty L] [Nonempty R] in
+omit [Fintype F] [DecidableEq F] [Nonempty L] [Nonempty R] [SampleableType R] in
 /-- Honest codewords pass the parity and consistency tests on every sampled neighborhood. -/
 theorem shared_accept_honest (H : G.WeightedSystem F) (u v : L → F)
     (hu : u ∈ H.code) (hv : v ∈ H.code) (r : F) {Q : ℕ} (sample : Fin Q → R) :
@@ -34,20 +35,20 @@ theorem shared_response_probability_le (H : G.WeightedSystem F) {ρ α : ℚ}
     (hα : α ≤ 1)
     (hdetect : ∀ S : Finset L, ρ ≤ S.card → α * Fintype.card R ≤ (G.neighborhood S).card)
     (u v : L → F) (response : F → L → F) (r : F) (Q : ℕ) :
-    Pr_{let sample ← $ᵖ (Fin Q → R)}[SharedAccept H u v response r sample] ≤
+    Pr{let sample ← $ᵗ (Fin Q → R)}[SharedAccept H u v response r sample] ≤
       (if GoodFold H.code ρ u v r then 1 else 0) +
         ENNReal.ofReal (1 - (α : ℝ))^Q := by
   classical
   by_cases hg : GoodFold H.code ρ u v r
   · simp only [hg, if_true]
-    exact (LegacyProbability.prob_le_one _ _).trans le_self_add
+    exact (prEvent_le_one _).trans le_self_add
   · simp only [hg, if_false, zero_add]
     by_cases hc : response r ∈ H.code
     · have hfar : ρ ≤ (distance (u + r • v) (response r) : ℚ) := by
         by_contra hn
         exact hg ⟨response r, hc, lt_of_not_ge hn⟩
       let S := support (u + r • v - response r)
-      refine (LegacyProbability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → R))
+      refine (prEvent_mono ($ᵗ (Fin Q → R))
         (fun sample => SharedAccept H u v response r sample)
         (fun sample => ∀ q, sample q ∈ Finset.univ \ G.neighborhood S) ?_).trans
         (miss_checks_le _ α hα (hdetect S hfar) Q)
@@ -59,7 +60,7 @@ theorem shared_response_probability_le (H : G.WeightedSystem F) {ρ α : ℚ}
       have hne : u i + r * v i ≠ response r i := by
         simpa [S, mem_support, sub_eq_zero, smul_eq_mul] using hi
       exact hne (h.2.2 q i hij)
-    · rw [LegacyProbability.prob_eq_zero_of_forall_not ($ᵖ (Fin Q → R))
+    · rw [prEvent_eq_zero_of_forall_not ($ᵗ (Fin Q → R))
         (fun sample => SharedAccept H u v response r sample) (fun _ h => hc h.2.1)]
       positivity
 
@@ -69,14 +70,14 @@ theorem shared_acceptance_le_of_many (H : G.WeightedSystem F) {α : ℚ}
     (hα : α ≤ 1) (u v : L → F)
     (hb : α * Fintype.card R ≤ (H.badChecks u v).card)
     (response : F → L → F) (r : F) (Q : ℕ) :
-    Pr_{let sample ← $ᵖ (Fin Q → R)}[SharedAccept H u v response r sample] ≤
+    Pr{let sample ← $ᵗ (Fin Q → R)}[SharedAccept H u v response r sample] ≤
       ENNReal.ofReal (1 - (α : ℝ))^Q := by
-  exact (LegacyProbability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → R))
+  exact (prEvent_mono ($ᵗ (Fin Q → R))
     (fun sample => SharedAccept H u v response r sample)
     (fun sample => ∀ q, sample q ∈ Finset.univ \ H.badChecks u v)
     (fun _ h => h.1)).trans (miss_checks_le _ α hα hb Q)
 
-omit [Field F] [DecidableEq F] [Fintype F] [Nonempty L] [Nonempty R] in
+omit [Field F] [DecidableEq F] [Fintype F] [Nonempty L] [Nonempty R] [SampleableType R] in
 /-- Expansion on a subset of size ceil(rho) controls every larger mismatch set.
 The generic statement retains its ceiling hypothesis; Paper.check_sampling derives it from the margin. -/
 theorem neighborhood_detection_of_expansion {c k : ℕ} {γ δ ρ α : ℚ}
@@ -101,7 +102,7 @@ theorem neighborhood_detection_of_expansion {c k : ℕ} {γ δ ρ α : ℚ}
     _ ≤ (G.neighborhood S₀).card := by simpa [hcard] using hexp
     _ ≤ _ := hsize
 
-omit [Field F] [DecidableEq F] [Fintype F] [Nonempty L] [Nonempty R] in
+omit [Field F] [DecidableEq F] [Fintype F] [Nonempty L] [Nonempty R] [SampleableType R] in
 /-- Each sampled check opens k interleaved coordinates; reuse can only lower the count. -/
 theorem openedCoordinates_card_le {c k Q : ℕ} (hreg : G.IsRegular c k)
     (sample : Fin Q → R) : (openedCoordinates G sample).card ≤ k * Q := by

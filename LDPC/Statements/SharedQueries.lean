@@ -22,9 +22,10 @@ def SharedAccept (H : G.WeightedSystem F) (u v : L → F) (response : F → L �
 Inputs are fixed before the challenge; the response precedes the query sample. -/
 def SharedSoundness [Fintype F] [Nonempty R]
     (H : G.WeightedSystem F) (P α : ℚ) : Prop :=
+  letI := SampleableType.ofFintype F; letI := SampleableType.ofFintype R
   ∀ (u v : L → F), PairFar H.code P u v →
     ∀ (response : F → L → F) (Q : ℕ),
-    Pr_{let r ← $ᵖ F; let sample ← $ᵖ (Fin Q → R)}[
+    Pr{let r ← $ᵗ F; let sample ← $ᵗ (Fin Q → R)}[
       SharedAccept H u v response r sample] ≤
       (Fintype.card F : ENNReal)⁻¹ + ENNReal.ofReal (1 - (α : ℝ))^Q
 

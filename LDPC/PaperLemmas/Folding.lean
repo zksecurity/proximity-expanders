@@ -1,7 +1,7 @@
 module
 
 public import LDPC.PaperLemmas.Expansion
-public import LDPC.Probability.Instances
+public import ArkLib.Data.Probability.Instances
 
 /-!
 # The smoothness-to-proximity-gap theorem

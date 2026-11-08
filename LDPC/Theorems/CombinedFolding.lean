@@ -17,16 +17,16 @@ variable {L R F : Type} [Fintype L] [DecidableEq L] [Nonempty L]
 omit [Nonempty R] [Fintype F] in
 /-- A claimed codeword fixed before the coordinate samples survives only by
 being a close fold, or by all samples missing the disagreement set. -/
-theorem fold_only_response_probability_le (H : G.WeightedSystem F) {θ : ℚ}
+theorem fold_only_response_probability_le [SampleableType L] (H : G.WeightedSystem F) {θ : ℚ}
     (hθn : θ ≤ Fintype.card L) (u v : L → F) (response : F → L → F)
     (r : F) (Q : ℕ) :
-    Pr_{let sample ← $ᵖ (Fin Q → L)}[FoldOnlyAccept H u v response r sample] ≤
+    Pr{let sample ← $ᵗ (Fin Q → L)}[FoldOnlyAccept H u v response r sample] ≤
       (if GoodFold H.code θ u v r then 1 else 0) +
         ENNReal.ofReal (1 - (θ : ℝ) / Fintype.card L)^Q := by
   classical
   by_cases hg : GoodFold H.code θ u v r
   · simp only [hg, if_true]
-    exact (LegacyProbability.prob_le_one _ _).trans le_self_add
+    exact (prEvent_le_one _).trans le_self_add
   · simp only [hg, if_false, zero_add]
     by_cases hc : response r ∈ H.code
     · have hfar : θ ≤ (distance (u + r • v) (response r) : ℚ) := by
@@ -44,43 +44,39 @@ theorem fold_only_response_probability_le (H : G.WeightedSystem F) {θ : ℚ}
       have hmiss := miss_checks_le B (θ / Fintype.card L)
         ((div_le_one (by positivity)).mpr hθn)
         (by rwa [div_mul_cancel₀ _ (by positivity)]) Q
-      have hbound := (LegacyProbability.Pr_le_Pr_of_implies ($ᵖ (Fin Q → L)) _ _ himp).trans hmiss
+      have hbound := (prEvent_mono ($ᵗ (Fin Q → L)) _ _ himp).trans hmiss
       simpa only [Rat.cast_div, Rat.cast_natCast] using hbound
-    · rw [LegacyProbability.prob_eq_zero_of_forall_not ($ᵖ (Fin Q → L))
+    · rw [prEvent_eq_zero_of_forall_not ($ᵗ (Fin Q → L))
         (fun sample => FoldOnlyAccept H u v response r sample) (fun _ h => hc h.1)]
       positivity
 
 /-- The original coordinate-only verifier, with the paper's explicit |R|/|F| term. -/
-theorem fold_only_soundness_of_smooth (H : G.WeightedSystem F)
+theorem fold_only_soundness_of_smooth [SampleableType F] [SampleableType L] (H : G.WeightedSystem F)
     {c k : ℕ} {α P ρ θ : ℚ}
     (hreg : G.IsRegular c k) (hc : 0 < c) (hs : IsSmooth H α P ρ)
     (hθ : θ ≤ ρ) (hθn : θ ≤ Fintype.card L)
     (hthreshold : (c : ℚ) * θ ≤ α * Fintype.card R)
     (u v : L → F) (hfar : PairFar H.code P u v)
     (response : F → L → F) (Q : ℕ) :
-    Pr_{let r ← $ᵖ F; let sample ← $ᵖ (Fin Q → L)}[
+    Pr{let r ← $ᵗ F; let sample ← $ᵗ (Fin Q → L)}[
       FoldOnlyAccept H u v response r sample] ≤
       (Fintype.card R : ENNReal) / Fintype.card F +
         ENNReal.ofReal (1 - (θ : ℝ) / Fintype.card L)^Q := by
   classical
-  let g : F → ENNReal := fun r =>
-    Pr_{let sample ← $ᵖ (Fin Q → L)}[FoldOnlyAccept H u v response r sample]
-  have hsplit : Pr_{let r ← $ᵖ F; let sample ← $ᵖ (Fin Q → L)}[
-      FoldOnlyAccept H u v response r sample] = ∑' r, ($ᵖ F) r * g r :=
-    LegacyProbability.prob_tsum_form_split_first _ _
-  rw [hsplit]
-  apply (LegacyProbability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code θ u v) _
-    (fun r => fold_only_response_probability_le H hθn u v response r Q)).trans
+  apply (prEvent_bind_bind_le_add_of_not ($ᵗ F) _ (GoodFold H.code θ u v) _
+    (ε := ENNReal.ofReal (1 - (θ : ℝ) / Fintype.card L)^Q) fun r hr => by
+      simpa only [hr, if_false, zero_add] using
+        fold_only_response_probability_le H hθn u v response r Q).trans
   exact add_le_add (combined_folding_of_smooth H hreg hc hs hθ hthreshold u v hfar) le_rfl
 
 /-- Integer-cutoff variant of the main folding theorem. -/
-theorem combined_folding_paper_parameters (H : G.WeightedSystem F)
+theorem combined_folding_paper_parameters [SampleableType F] (H : G.WeightedSystem F)
     {c k K : ℕ} {γ δ ε : ℚ}
     (hG : G.IsExpander c k γ δ) (hc : 0 < c) (hk : 0 < k) (hKpos : 0 < K)
     (hγ0 : 0 ≤ γ) (hε0 : 0 < ε) (hε : ε < 1 - 3 * γ)
     (hK : (K : ℚ) ≤ δ * Fintype.card L)
     (u v : L → F) (hfar : PairFar H.code ((1 - γ) * K) u v) :
-    Pr_{let r ← $ᵖ F}[
+    Pr{let r ← $ᵗ F}[
       GoodFold H.code ((1 - 3 * γ - ε) * ((1 - γ) * K)) u v r] ≤
       (Fintype.card R : ENNReal) / Fintype.card F := by
   have hτ := ligero_threshold_choice γ ε hε0 hε

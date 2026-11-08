@@ -2,7 +2,7 @@ module
 
 public import LDPC.Statements.SharedQueries
 public import LDPC.Helpers.Algebra
-public import LDPC.Probability.Instances
+public import ArkLib.Data.Probability.Instances
 public import Mathlib.Tactic.Finiteness
 
 /-! A lower bound on the fraction of detecting checks bounds the miss probability. -/
@@ -10,14 +10,14 @@ public import Mathlib.Tactic.Finiteness
 open scoped ProbabilityTheory
 namespace SmoothLDPC.Protocol
 
-variable {R : Type} [Fintype R] [DecidableEq R] [Nonempty R]
+variable {R : Type} [Fintype R] [DecidableEq R] [Nonempty R] [SampleableType R]
 
 /-- All samples avoid a detecting set with probability at most (1-alpha)^Q. -/
 theorem miss_checks_le (B : Finset R) (α : ℚ) (hα : α ≤ 1)
     (hB : α * Fintype.card R ≤ B.card) (Q : ℕ) :
-    Pr_{let sample ← $ᵖ (Fin Q → R)}[
+    Pr{let sample ← $ᵗ (Fin Q → R)}[
       ∀ q, sample q ∈ Finset.univ \ B] ≤ ENNReal.ofReal (1 - (α : ℝ))^Q := by
-  rw [LegacyProbability.prob_uniform_pi_mem_finset_eq]
+  rw [Probability.prob_uniform_pi_mem_finset_eq]
   apply pow_le_pow_left'
   apply (ENNReal.toReal_le_toReal (by finiteness) (by finiteness)).mp
   have hBR : B.card ≤ Fintype.card R := Finset.card_le_univ _

@@ -17,6 +17,8 @@ variable {L R F : Type} [Fintype L] [DecidableEq L] [Nonempty L]
 theorem soundness_of_smooth (H : G.WeightedSystem F) {P : ℚ} {s t : ℕ}
     (hs : IsSmooth H ((t : ℚ) / Fintype.card R) P s) :
     Soundness H P s t := by
+  let _ := SampleableType.ofFintype F; let _ := SampleableType.ofFintype R
+  let _ := SampleableType.ofFintype L
   intro u v hfar response Qp Qs
   by_cases hb : (H.badChecks u v).card ≤ t
   · have hbad : ((H.badChecks u v).card : ℚ) ≤

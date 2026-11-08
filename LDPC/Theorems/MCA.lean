@@ -36,13 +36,13 @@ theorem card_bad_le_of_smooth [Nonempty L] (H : G.WeightedSystem F)
     have hp₀' : L₀.card≤p := by exact_mod_cast hp₀
     exact (hcount.trans (hpair.trans hp₀')).trans (le_max_right _ _)
 
-theorem probability_le_of_smooth [Nonempty L] (H : G.WeightedSystem F)
+theorem probability_le_of_smooth [Nonempty L] [SampleableType F] (H : G.WeightedSystem F)
     {α D d ρ : ℚ} {p : ℕ} (hs : IsSmooth H α p D)
     (hd : HasDistance H.code d) (hp : (p:ℚ)<d) (hρ : ρ<D)
     (u v : L → F) (hbad : ((H.badChecks u v).card:ℚ)≤α*Fintype.card R) :
-    Pr_{let z ← $ᵖ F}[Bad H.code ρ u v z]≤(max 1 p:ℕ)/ (Fintype.card F:ENNReal) := by
+    Pr{let z ← $ᵗ F}[Bad H.code ρ u v z]≤(max 1 p:ℕ)/ (Fintype.card F:ENNReal) := by
   classical
-  rw [LegacyProbability.prob_uniform_eq_card_filter_div_card]
+  rw [SampleableType.prEvent_uniformSample]
   apply ENNReal.div_le_div_right
   exact_mod_cast card_bad_le_of_smooth H hs hd hp hρ u v hbad
 

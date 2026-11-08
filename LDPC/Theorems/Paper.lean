@@ -24,7 +24,7 @@ variable {L R F : Type} [Fintype L] [Fintype R] [Fintype F]
 
 /-- The main technical lemma: fixed jointly far inputs with few violated checks
 have at most one strictly close fold at radius d/2=(1−γ)δn. -/
-theorem main_technical_lemma (H : G.WeightedSystem F)
+theorem main_technical_lemma [SampleableType F] (H : G.WeightedSystem F)
     (hG : G.IsExpander c k γ δ) (hc : 0 < c) (hγ0 : 0 ≤ γ)
     (hε0 : 0 < ε) (hε : ε < 1 - 3 * γ)
     (hmargin : 1 ≤ γ * (δ * Fintype.card L))
@@ -32,7 +32,7 @@ theorem main_technical_lemma (H : G.WeightedSystem F)
     (hbad : ((H.badChecks u v).card : ℚ) ≤
       ((1 - 3 * γ - ε) * k * ((1 - γ) * δ * Fintype.card L) /
         Fintype.card L) * Fintype.card R) :
-    Pr_{let r ← $ᵖ F}[GoodFold H.code ((1 - γ) * δ * Fintype.card L) u v r] ≤
+    Pr{let r ← $ᵗ F}[GoodFold H.code ((1 - γ) * δ * Fintype.card L) u v r] ≤
       (Fintype.card F : ENNReal)⁻¹ := by
   classical
   have hs := half_distance_smoothness hG hc hγ0
@@ -43,17 +43,17 @@ theorem main_technical_lemma (H : G.WeightedSystem F)
       (1 - 3 * γ - ε) * k * ((1 - γ) * δ * Fintype.card L) /
         Fintype.card L := by ring
   rw [hα] at hs
-  exact LegacyProbability.prob_uniform_le_inv_of_card_le_one _
+  exact prEvent_uniformSample_le_inv_of_card_le_one _
     (theorem_8_card H hs u v hfar hbad)
 
 /-- The main folding theorem combines the few-check lemma with a union bound
 on canceled checks. The two cases are fixed before the uniform challenge. -/
-theorem folding (H : G.WeightedSystem F)
+theorem folding [SampleableType F] (H : G.WeightedSystem F)
     (hG : G.IsExpander c k γ δ) (hc : 0 < c) (hγ0 : 0 ≤ γ)
     (hε0 : 0 < ε) (hε : ε < 1 - 3 * γ)
     (hmargin : 1 ≤ γ * (δ * Fintype.card L))
     (u v : L → F) (hfar : PairFar H.code ((1 - γ) * δ * Fintype.card L) u v) :
-    Pr_{let r ← $ᵖ F}[
+    Pr{let r ← $ᵗ F}[
       GoodFold H.code ((1 - 3 * γ - ε) * ((1 - γ) * δ * Fintype.card L)) u v r] ≤
       (Fintype.card R : ENNReal) / Fintype.card F := by
   have hs := half_distance_smoothness hG hc hγ0
@@ -80,13 +80,13 @@ theorem folding (H : G.WeightedSystem F)
 
 /-- The standard Ligero test uses the main folding radius t and Q independent
 coordinate openings. The response precedes the coordinate samples. -/
-theorem ligero (H : G.WeightedSystem F)
+theorem ligero [SampleableType F] [SampleableType L] (H : G.WeightedSystem F)
     (hG : G.IsExpander c k γ δ) (hc : 0 < c) (hγ0 : 0 ≤ γ)
     (hε0 : 0 < ε) (hε : ε < 1 - 3 * γ)
     (hmargin : 1 ≤ γ * (δ * Fintype.card L))
     (u v : L → F) (hfar : PairFar H.code ((1 - γ) * δ * Fintype.card L) u v)
     (response : F → L → F) (Q : ℕ) :
-    Pr_{let r ← $ᵖ F; let sample ← $ᵖ (Fin Q → L)}[
+    Pr{let r ← $ᵗ F; let sample ← $ᵗ (Fin Q → L)}[
       Protocol.FoldOnlyAccept H u v response r sample] ≤
       (Fintype.card R : ENNReal) / Fintype.card F +
         ENNReal.ofReal (1 - (((1 - 3 * γ - ε) *
@@ -101,11 +101,10 @@ theorem ligero (H : G.WeightedSystem F)
     nlinarith
   have ht : t ≤ Fintype.card L :=
     (mul_le_of_le_one_left hP (by linarith)).trans hfar.radius_lt_card.le
-  let g : F → ENNReal := fun r =>
-    Pr_{let sample ← $ᵖ (Fin Q → L)}[Protocol.FoldOnlyAccept H u v response r sample]
-  rw [LegacyProbability.prob_tsum_form_split_first _ _]
-  apply (LegacyProbability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code t u v) _
-    (fun r => Protocol.fold_only_response_probability_le H ht u v response r Q)).trans
+  apply (prEvent_bind_bind_le_add_of_not ($ᵗ F) _ (GoodFold H.code t u v) _
+    (ε := ENNReal.ofReal (1 - (t : ℝ) / Fintype.card L)^Q) fun r hr => by
+      simpa only [hr, if_false, zero_add] using
+        Protocol.fold_only_response_probability_le H ht u v response r Q).trans
   exact add_le_add (folding H hG hc hγ0 hε0 hε hmargin u v hfar) le_rfl
 
 
@@ -120,6 +119,7 @@ theorem check_sampling (H : G.WeightedSystem F)
   let P : ℚ := (1 - γ) * δ * Fintype.card L
   let α : ℚ := (1 - 3 * γ - ε) * k * P / Fintype.card L
   change Protocol.SharedSoundness H P α
+  let _ := SampleableType.ofFintype F; let _ := SampleableType.ofFintype R
   intro u v hfar response Q
   have hx : 0 ≤ δ * Fintype.card L := by
     by_contra hn
@@ -172,13 +172,14 @@ theorem check_sampling (H : G.WeightedSystem F)
 fold consistency. Direct parity queries retain the half-distance radius without
 requiring neighborhood sampling for the consistency test. This is an additional
 consequence of the paper's technical lemma, not one of its stated protocols. -/
-theorem hybrid_sampling (H : G.WeightedSystem F)
+theorem hybrid_sampling [SampleableType F] [SampleableType R] [SampleableType L]
+    (H : G.WeightedSystem F)
     (hG : G.IsExpander c k γ δ) (hc : 0 < c) (hγ0 : 0 ≤ γ)
     (hε0 : 0 < ε) (hε : ε < 1 - 3 * γ)
     (hmargin : 1 ≤ γ * (δ * Fintype.card L))
     (u v : L → F) (hfar : PairFar H.code ((1 - γ) * δ * Fintype.card L) u v)
     (response : F → L → F) (Qp Qs : ℕ) :
-    Pr_{let r ← $ᵖ F; let samples ← $ᵖ ((Fin Qp → R) × (Fin Qs → L))}[
+    Pr{let r ← $ᵗ F; let samples ← $ᵗ ((Fin Qp → R) × (Fin Qs → L))}[
       Protocol.Accept H u v response r samples.1 samples.2] ≤
       max ((Fintype.card F : ENNReal)⁻¹ +
         ENNReal.ofReal (1 - (((1 - γ) * δ * Fintype.card L : ℚ) : ℝ) /
@@ -189,34 +190,32 @@ theorem hybrid_sampling (H : G.WeightedSystem F)
   let P : ℚ := (1 - γ) * δ * Fintype.card L
   let α : ℚ := (1 - 3 * γ - ε) * k * P / Fintype.card L
   by_cases hb : ((H.badChecks u v).card : ℚ) ≤ α * Fintype.card R
-  · let g : F → ENNReal := fun r =>
-      Pr_{let samples ← $ᵖ ((Fin Qp → R) × (Fin Qs → L))}[
-        Protocol.Accept H u v response r samples.1 samples.2]
-    rw [LegacyProbability.prob_tsum_form_split_first _ _]
-    apply le_trans _ (le_max_left _ _)
-    apply (LegacyProbability.tsum_prob_le_add ($ᵖ F) g (GoodFold H.code P u v) _ ?_).trans
+  · apply le_trans _ (le_max_left _ _)
+    apply (prEvent_bind_bind_le_add_of_not ($ᵗ F) _ (GoodFold H.code P u v) _
+      (ε := ENNReal.ofReal (1 - (P : ℝ) / Fintype.card L)^Qs) ?_).trans
     · exact add_le_add
         (main_technical_lemma H hG hc hγ0 hε0 hε hmargin u v hfar hb) le_rfl
-    · intro r
-      have hle := LegacyProbability.Pr_le_Pr_of_implies
-        ($ᵖ ((Fin Qp → R) × (Fin Qs → L)))
+    · intro r hr
+      have hle := prEvent_mono
+        ($ᵗ ((Fin Qp → R) × (Fin Qs → L)))
         (fun samples => Protocol.Accept H u v response r samples.1 samples.2)
         (fun samples => Protocol.FoldOnlyAccept H u v response r samples.2)
         (fun _ h => h.2)
       apply hle.trans
-      rw [LegacyProbability.prob_split_uniform_sampling_of_prod]
-      apply LegacyProbability.Pr_seq_le_of_forall_le
+      rw [SampleableType.prEvent_uniformSample_prod]
+      apply prEvent_bind_bind_le_of_forall_le
       intro checks
-      exact Protocol.fold_only_response_probability_le H
+      have hr' : ¬ GoodFold H.code ((1 - γ) * δ * Fintype.card L) u v r := hr
+      simpa only [hr', if_false, zero_add] using Protocol.fold_only_response_probability_le H
         hfar.radius_lt_card.le u v response r Qs
   · apply le_trans _ (le_max_right _ _)
-    apply LegacyProbability.Pr_seq_le_of_forall_le
+    apply prEvent_bind_bind_le_of_forall_le
     intro r
-    have hle := LegacyProbability.Pr_le_Pr_of_implies
-      ($ᵖ ((Fin Qp → R) × (Fin Qs → L)))
+    have hle := prEvent_mono
+      ($ᵗ ((Fin Qp → R) × (Fin Qs → L)))
       (fun samples => Protocol.Accept H u v response r samples.1 samples.2)
       (fun samples => MCA.parityAccept H u v samples.1) (fun _ h => h.1)
-    rw [LegacyProbability.prob_marginalization_first_of_prod] at hle
+    rw [SampleableType.prEvent_uniformSample_fst] at hle
     have hcount := Finset.card_le_univ (H.badChecks u v)
     have hm : (0 : ℚ) < Fintype.card R := by exact_mod_cast Fintype.card_pos
     have hα : α ≤ 1 := by
