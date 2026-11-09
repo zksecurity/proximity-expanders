@@ -2,7 +2,7 @@
 
 Lean 4 formalization of distance, smoothness, and proximity gaps for expander
 codes. Companion to
-*On Proximity Gaps for Expander Codes* (ePrint link forthcoming).
+[*On Proximity Gaps for Expander Codes*](https://eprint.iacr.org/2026/2806) (ePrint 2026/2806).
 
 Start with [the main theorems](LDPC/Theorems/Main.lean).
 [Paper statements](LDPC/Theorems/Paper.lean) include the Ligero test, sampling
